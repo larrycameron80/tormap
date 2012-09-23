@@ -49,6 +49,9 @@ with open('cached-descriptors') as f:
 		if line.startswith('opt fingerprint'):
 			fingerprint=line[16:]
 			currentRouter['fingerprint'] = fingerprint.replace(' ','').lower()
+		if line.startswith('fingerprint'):
+			fingerprint=line[12:]
+			currentRouter['fingerprint'] = fingerprint.replace(' ','').lower()
 		if line.startswith('uptime '):
 			currentRouter['uptime']=line[7:]
 		if line.startswith('bandwidth '):
