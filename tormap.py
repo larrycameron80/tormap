@@ -29,6 +29,7 @@ FAST = 1000000
 import base64, shelve, pygeoip, cgi, re
 from operator import attrgetter, itemgetter
 from string import Template
+import random
 
 cachedRelays = dict()
 currentRouter = dict()
@@ -156,12 +157,15 @@ for relay in allRelays.values():
 		info = geoIPcache[ip]
 	else:
 		if geoIPdb is None:
-			geoIPdb = pygeoip.GeoIP('GeoLiteCity.dat')
+			geoIPdb = pygeoip.GeoIP('GeoLiteCity.dat',pygeoip.STANDARD)
 		info = geoIPdb.record_by_addr(ip)
 		geoIPcache[ip] = info
-	relay['location'] = info
-	relay['latitude'] = info['latitude']
-	relay['longitude'] = info['longitude']
+	if info is None:
+		print ip
+	if info is not None:
+		relay['location'] = info
+		relay['latitude'] = info['latitude'] + random.random()/(5*10)
+		relay['longitude'] = info['longitude'] + random.random()/(5*10)
 	
 geoIPcache.close()
 
