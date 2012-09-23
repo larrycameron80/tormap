@@ -35,7 +35,7 @@ cachedRelays = dict()
 currentRouter = dict()
 
 # parse cached-descriptors to extract uptime and announced bandwidth
-with open('cached-descriptors') as f:
+with open('descriptors') as f:
     for line in f:				
 		line = line.strip()
 		if line.startswith('router '):
@@ -58,7 +58,7 @@ with open('cached-descriptors') as f:
 		if line.startswith('bandwidth '):
 			currentRouter['bandwidth'] = line[10:]
 			try:
-				currentRouter['bw-observed'] = int(line.split()[3])			
+				currentRouter['bw-observed'] = int(line.split()[3])
 			except:
 				pass
 			bandwidth = line[10:]
@@ -81,7 +81,7 @@ namedRelays = dict() # Named flag
 otherRelays = dict() # non Stable, non Exit
 
 count = 0
-with open('cached-consensus') as f:
+with open('consensus') as f:
     for line in f:							
 		line = line.strip()
 		if line.startswith('r '):
