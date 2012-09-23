@@ -245,7 +245,7 @@ kmlHeader = (
 	'	<Style id="stableFast">\n'
 	'		<IconStyle>\n'
 	'			<Icon>\n'
-	'				<href>http://maps.google.com/mapfiles/kml/paddle/ylw-stars.png</href>\n'
+	'				<href>http://maps.google.com/mapfiles/kml/paddle/purple-blank.png</href>\n'
 	'			</Icon>\n'
 	'		</IconStyle>\n'
 	'	</Style>\n'
