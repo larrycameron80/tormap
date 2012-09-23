@@ -134,6 +134,7 @@ allRelays.update(exitFastRelays)
 allRelays.update(stableRelays)
 allRelays.update(stableFastRelays)
 allRelays.update(otherRelays)
+allRelays.update(badRelays)
 
 # geoIP
 geoIPcache = shelve.open('geoip-cache')
@@ -195,6 +196,7 @@ kmlBody = kmlBody + generateFolder("%s Exits" % len(exitRelays), "#exit", exitRe
 kmlBody = kmlBody + generateFolder("%s Fast stable nodes (>= 1MB/s)" % len(stableFastRelays), "#stableFast", stableFastRelays)
 kmlBody = kmlBody + generateFolder("%s Stable nodes" % len(stableRelays), "#stable", stableRelays)
 kmlBody = kmlBody + generateFolder("%s Other" % len(otherRelays), "#other", otherRelays)
+kmlBody = kmlBody + generateFolder("%s Bad" % len(badRelays), "#bad", badRelays)
 
 kml = open('tormap.kml', 'w')
 
@@ -235,6 +237,13 @@ kmlHeader = (
 	'		<IconStyle>\n'
 	'			<Icon>\n'
 	'				<href>http://maps.google.com/mapfiles/kml/paddle/wht-blank.png</href>\n'
+	'			</Icon>\n'
+	'		</IconStyle>\n'
+	'	</Style>\n'
+	'	<Style id="bad">\n'
+	'		<IconStyle>\n'
+	'			<Icon>\n'
+	'				<href>http://maps.google.com/mapfiles/kml/pal3/icon41.png</href>\n'
 	'			</Icon>\n'
 	'		</IconStyle>\n'
 	'	</Style>\n'
