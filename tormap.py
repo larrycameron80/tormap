@@ -75,6 +75,8 @@ exitFastRelays = dict() # Exit flag, >= FAST
 exitRelays = dict() # Exit flag, slower than FAST
 stableFastRelays = dict() # Stable flag, but not Exit
 stableRelays = dict() # Stable flag, but not Exit
+authRelays = dict() # Authority flag
+namedRelays = dict() # Named flag
 otherRelays = dict() # non Stable, non Exit
 
 count = 0
@@ -102,6 +104,8 @@ with open('cached-consensus') as f:
 			currentRouter['flags'] = flags			
 			if flags.find('Bad')>-1:	
 				badRelays[fingerprint] = currentRouter
+			elif flags.find('Authority')>-1:
+				authRelays[fingerprint] = currentRouter
 			elif flags.find('Exit')>-1:
 				if currentRouter.has_key('bw-observed') and currentRouter['bw-observed']>FAST:
 					exitFastRelays[fingerprint] = currentRouter
@@ -112,6 +116,8 @@ with open('cached-consensus') as f:
 					stableFastRelays[fingerprint] = currentRouter
 				else:
 					stableRelays[fingerprint] = currentRouter
+			elif flags.find('Named')>-1:
+				namedRelays[fingerprint] = currentRouter
 			else:
 				otherRelays[fingerprint] = currentRouter
 
@@ -120,9 +126,11 @@ print 'Exit:', len(exitRelays)
 print 'Fast exit:', len(exitFastRelays)
 print 'Non-exit stable:', len(stableRelays)
 print 'Fast non-exit stable:', len(stableFastRelays)
+print 'Authority:', len(authRelays)
+print 'Named:', len(namedRelays)
 print 'Other:', len(otherRelays)
 
-inConsensus = len(badRelays)+len(exitRelays)+len(stableRelays)+len(otherRelays)
+inConsensus = len(namedRelays)+len(authRelays)+len(badRelays)+len(exitRelays)+len(stableRelays)+len(otherRelays)
 print '[ in consensus:', inConsensus, ']'
 notInConsensus = len(cachedRelays)-len(badRelays)-len(exitRelays)-len(stableRelays)-len(otherRelays)
 print '[ cached descriptors not in consensus:', notInConsensus, ']'
@@ -133,6 +141,8 @@ allRelays.update(exitRelays)
 allRelays.update(exitFastRelays)
 allRelays.update(stableRelays)
 allRelays.update(stableFastRelays)
+allRelays.update(authRelays)
+allRelays.update(namedRelays)
 allRelays.update(otherRelays)
 allRelays.update(badRelays)
 
@@ -190,11 +200,13 @@ def generateFolder(name, styleUrl, relays):
 		group = group + placemark
 	group = group + "\n</Folder>"
 	return group
-	
+
 kmlBody = generateFolder("%s Fast Exits (>= 1MB/s)" % len(exitFastRelays), "#exitFast", exitFastRelays)
 kmlBody = kmlBody + generateFolder("%s Exits" % len(exitRelays), "#exit", exitRelays)
 kmlBody = kmlBody + generateFolder("%s Fast stable nodes (>= 1MB/s)" % len(stableFastRelays), "#stableFast", stableFastRelays)
 kmlBody = kmlBody + generateFolder("%s Stable nodes" % len(stableRelays), "#stable", stableRelays)
+kmlBody = kmlBody + generateFolder("%s Authority nodes" % len(authRelays), "#auth", authRelays)
+kmlBody = kmlBody + generateFolder("%s Named nodes" % len(namedRelays), "#named", namedRelays)
 kmlBody = kmlBody + generateFolder("%s Other" % len(otherRelays), "#other", otherRelays)
 kmlBody = kmlBody + generateFolder("%s Bad" % len(badRelays), "#bad", badRelays)
 
@@ -237,6 +249,20 @@ kmlHeader = (
 	'		<IconStyle>\n'
 	'			<Icon>\n'
 	'				<href>http://maps.google.com/mapfiles/kml/paddle/wht-blank.png</href>\n'
+	'			</Icon>\n'
+	'		</IconStyle>\n'
+	'	</Style>\n'
+	'	<Style id="auth">\n'
+	'		<IconStyle>\n'
+	'			<Icon>\n'
+	'				<href>http://maps.google.com/mapfiles/kml/paddle/blu-stars.png</href>\n'
+	'			</Icon>\n'
+	'		</IconStyle>\n'
+	'	</Style>\n'
+	'	<Style id="named">\n'
+	'		<IconStyle>\n'
+	'			<Icon>\n'
+	'				<href>http://maps.google.com/mapfiles/kml/paddle/wht-stars.png</href>\n'
 	'			</Icon>\n'
 	'		</IconStyle>\n'
 	'	</Style>\n'
