@@ -35,7 +35,7 @@ cachedRelays = dict()
 currentRouter = dict()
 
 # parse cached-descriptors to extract uptime and announced bandwidth
-with open('descriptors') as f:
+with open('all') as f:
     for line in f:				
 		line = line.strip()
 		if line.startswith('router '):
@@ -161,7 +161,7 @@ for relay in allRelays.values():
 		info = geoIPdb.record_by_addr(ip)
 		geoIPcache[ip] = info
 	if info is None:
-		print ip
+		print 'GeoIP problem: ',relay['name'],ip
 	if info is not None:
 		relay['location'] = info
 		relay['latitude'] = info['latitude'] + random.random()/(5*10)
