@@ -195,6 +195,8 @@ def generateFolder(name, styleUrl, relays):
             # for displaying: pretty fingerprint in blocks of four, uppercase
             relay['prettyFingerprint'] = " ".join(filter(None, re.split('(\w{4})', fingerprint.upper())))
             relay['styleUrl'] = styleUrl
+            if 'contact' not in relay:
+                relay['contact'] = 'None'
             placemark = placemarkTemplate.safe_substitute(relay)
             group = group + placemark
         group = group + "\n</Folder>"
