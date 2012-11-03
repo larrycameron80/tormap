@@ -172,14 +172,15 @@ def generateFolder(name, styleUrl, relays):
             <name>$name</name>\n\
             <description>\n\
             <![CDATA[\n\
-            <p>IP: <a href="https://tools.whois.net/whoisbyip/$ip">$ip</a> ORPort: $orport DirPort: $dirport</p>\n\
-            <p>Bandwidth: $bandwidth</p>\n\
-            <p>Flags: $flags</p>\n\
-            <p>Uptime: $uptime</p>\n\
-            <p>Contact: $contact</p>\n\
-            <p>Policy: $policy</p>\n\
-            <p>Fingerprint: <a href="https://torstatus.blutmagie.de/router_detail.php?FP=$fingerprint">$prettyFingerprint</a></p>\n\
-            <p>Version: $version</p>\n\
+            <p><strong>IP</strong>: <a href="https://tools.whois.net/whoisbyip/$ip">$ip</a></p>\n\
+            <p><strong>ORPort</strong>: $orport <strong>DirPort</strong>: $dirport</p>\n\
+            <p><strong>Bandwidth</strong>: $bandwidth</p>\n\
+            <p><strong>Flags</strong>: $flags</p>\n\
+            <p><strong>Uptime</strong>: $uptime</p>\n\
+            <p><strong>Contact</strong>: $contact</p>\n\
+            <p><strong>Policy</strong>: $policy</p>\n\
+            <p><strong>Fingerprint</strong>: <a href="https://torstatus.blutmagie.de/router_detail.php?FP=$fingerprint">$prettyFingerprint</a></p>\n\
+            <p><strong>Version</strong>: $version</p>\n\
             ]]>\n\
             </description>\n\
             <styleUrl>$styleUrl</styleUrl>\n\
