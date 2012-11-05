@@ -1,27 +1,27 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-'''  
+'''
  quick and dirty hack Moritz Bartl moritz@torservers.net
  13.12.2010
 
  Changes by George Kargiotakis kargig[at]void[dot]gr
  01.11.2012
 
- requires: 
+ requires:
  - pygeoip, https://code.google.com/p/pygeoip/
  - geoIP city database, eg. https://www.maxmind.com/app/geolitecity
 
  This program is free software: you can redistribute it and/or modify
- it under the terms of the GNU Lesser General Public License (LGPL) 
- as published by the Free Software Foundation, either version 3 of the 
+ it under the terms of the GNU Lesser General Public License (LGPL)
+ as published by the Free Software Foundation, either version 3 of the
  License, or any later version.
 
  This program is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU Lesser General Public License for more details.
- 
+
  https://www.gnu.org/licenses/
 '''
 
@@ -163,7 +163,7 @@ def geoiplookup():
                 relay['location'] = info
                 relay['latitude'] = info['latitude'] + random.random()/(5*10)
                 relay['longitude'] = info['longitude'] + random.random()/(5*10)
-            
+
         geoIPcache.close()
 
 
@@ -310,10 +310,10 @@ def genkml():
                 '        </IconStyle>\n'
                 '    </Style>\n'
                 )
-           
+
             kmlFooter = ('</Document>\n'
                              '</kml>\n')
-              
+
             kml.write(kmlHeader_top)
             kml.write(styletag)
             kml.write(kmlBody)
@@ -333,7 +333,7 @@ def main(argv=None):
 import sys
 if __name__ == "__main__":
     icon_dict = {
-        'auth':'https://maps.google.com/mapfiles/kml/paddle/blu-stars.png', 
+        'auth':'https://maps.google.com/mapfiles/kml/paddle/blu-stars.png',
         'bad':'https://maps.google.com/mapfiles/kml/pal3/icon41.png',
         'exitFast':'https://maps.google.com/mapfiles/kml/paddle/red-stars.png',
         'exit':'https://maps.google.com/mapfiles/kml/paddle/grn-blank.png',
