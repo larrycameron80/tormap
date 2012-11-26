@@ -173,7 +173,7 @@ def generateFolder(name, styleUrl, relays):
             <name>$name</name>\n\
             <description>\n\
             <![CDATA[\n\
-            <p><strong>IP</strong>: <a href="https://tools.whois.net/whoisbyip/$ip">$ip</a></p>\n\
+            <p><strong>IP</strong>: <a href="https://who.is/whois-ip/ip-address/$ip">$ip</a></p>\n\
             <p><strong>ORPort</strong>: $orport <strong>DirPort</strong>: $dirport</p>\n\
             <p><strong>Bandwidth</strong>: $bandwidth</p>\n\
             <p><strong>Flags</strong>: $flags</p>\n\
