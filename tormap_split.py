@@ -271,7 +271,7 @@ def genhtml():
             '  </head>\n'
             '  <body onload="initialize()">\n'
             '    <p align="left">\n'
-            '    <img alt="Tor Logo" src="tor-logo.jpg" />\n'
+            '    <a href="https://www.torproject.org"><img alt="Tor Logo" src="tor-logo.jpg" /></a>\n'
         )
 
         htmlFooter = (
