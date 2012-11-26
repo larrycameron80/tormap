@@ -55,7 +55,7 @@ else
 fi
 
 if [ -e $TMPDIR/GeoLiteCity.dat ] && [ -e $TMPDIR/all ] && [ -e $TMPDIR/consensus ]; then
-	python $SDIR/tormap_split.py
+	python $SDIR/tormap.py
 else
 	echo "missing important files. exiting."
 	exit 2

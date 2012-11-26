@@ -3,12 +3,12 @@ Needed packages:
 
 Installation instructions:
 1. copy html/* files to your web path
-2. copy tormap_split.py along with runme.sh to a directory of your choice (BINDIR)
+2. copy tormap.py along with runme.sh to a directory of your choice (BINDIR)
 3. edit runme.sh and change the following variables:
 	KMLDIR='/var/www/maps'
 	TMPDIR='/tmp/tormap'
 	BINDIR='/usr/local/bin/'
-4. edit tormap_split and change the following variables:
+4. edit tormap.py and change the following variables:
 	KMLDIR = '/var/www/maps/'
 	HTMLDIR = '/var/www/'
 	TMPDIR= '/tmp/tormap/'
