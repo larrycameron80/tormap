@@ -27,9 +27,9 @@
 
 #Variables
 FAST = 1000000
-KMLDIR = 'html/maps/'
-HTMLDIR = 'html/'
-WWWDIR = ''
+KMLDIR = '/var/www/maps/'
+HTMLDIR = '/var/www/'
+TMPDIR= '/tmp/tormap/'
 
 import os
 import base64, shelve, pygeoip, cgi, re
@@ -41,7 +41,7 @@ def parse():
         cachedRelays = dict()
         currentRouter = dict()
         # parse cached-descriptors to extract uptime and announced bandwidth
-        with open('all') as f:
+        with open(TMPDIR + 'all') as f:
             for line in f:
                 line = line.strip()
                 if line.startswith('router '):
@@ -79,7 +79,7 @@ def parse():
 
 
         count = 0
-        with open('consensus') as f:
+        with open(TMPDIR + 'consensus') as f:
             for line in f:
                 line = line.strip()
                 if line.startswith('r '):
@@ -146,7 +146,7 @@ def parse():
 
 def geoiplookup():
         # geoIP
-        geoIPcache = shelve.open('geoip-cache')
+        geoIPcache = shelve.open(TMPDIR + 'geoip-cache')
         geoIPdb = None
 
         for relay in allRelays.values():
@@ -155,7 +155,7 @@ def geoiplookup():
                 info = geoIPcache[ip]
             else:
                 if geoIPdb is None:
-                    geoIPdb = pygeoip.GeoIP('GeoLiteCity.dat',pygeoip.STANDARD)
+                    geoIPdb = pygeoip.GeoIP(TMPDIR + 'GeoLiteCity.dat',pygeoip.STANDARD)
                 info = geoIPdb.record_by_addr(ip)
                 geoIPcache[ip] = info
             if info is None:
