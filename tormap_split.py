@@ -27,7 +27,8 @@
 
 #Variables
 FAST = 1000000
-KMLDIR = 'maps/'
+KMLDIR = 'html/maps/'
+HTMLDIR = 'html/'
 WWWDIR = ''
 
 import os
@@ -321,14 +322,96 @@ def genkml():
             kml.close()
 
 def genhtml():
-        # generate HTML
+        htmlHeader_top = (
+            '<html>\n'
+            '  <head>\n'
+            '    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">\n'
+            '    <meta charset="utf-8">\n'
+            '    <title>World City Map of Tor Nodes</title>\n'
+            '    <link href="default.css" rel="stylesheet">\n'
+            '    <script type="text/javascript" src="//maps.google.com/maps/api/js?sensor=false"></script>\n'
+            '    <script type="text/javascript" src="tormap.js"></script>\n'
+            '  </head>\n'
+            '  <body onload="initialize()">\n'
+            '    <p align="left">\n'
+            '    <img alt="Tor Logo" src="tor-logo.jpg" />\n'
+        )
+
+        htmlFooter = (
+            '    <br /></p>\n'
+            '    <div id="map_canvas" style="width: 79%; height: 80%; float: left"></div>\n'
+            '    <div id="content_window" style="width: 21%; height: 100%; float: left"></div>\n'
+            '  </body>\n'
+            '</html>\n'
+        )
+
         htmlBody = ()
+        htmlBody = ''
+        #we need a certain order inside the html
+        parts = ['other','named','stable','stableFast','exit','exitFast','auth','bad']
+        for part in parts:
+            if part == 'auth':
+                htmlBody += (
+                        '    <img alt="Authority" src="' + icon_dict[part] + '" />\n'
+                        '    <input onclick="toggleAuthority();" type="checkbox" value="Authority" checked/>Authority ('
+                        + str(len(authRelays)) + ')\n'
+                        )
+            elif part == 'bad':
+                htmlBody += (
+                        '    <img alt="Bad" src="'+ icon_dict[part] + '" />\n'
+                        '    <input onclick="toggleBad();" type="checkbox" value="Bad" checked/>Bad ('
+                        + str(len(badRelays)) + ')\n'
+                        )
+            elif part == 'exitFast':
+                htmlBody += (
+                        '    <img alt="FastExit" src="' + icon_dict[part] + '" />\n'
+                        '    <input onclick="toggleFastExit();" type="checkbox" value="Fast Exits" checked/>Fast Exit ('
+                        + str(len(exitFastRelays)) + ')\n'
+                        )
+            elif part == 'exit':
+                htmlBody += (
+                        '    <img alt="Exit" src="' + icon_dict[part] + '" />\n'
+                        '    <input onclick="toggleExit();" type="checkbox" value="Exit" checked/>Exit ('
+                        + str(len(exitRelays)) + ')\n'
+                        )
+            elif part == 'stableFast':
+                htmlBody += (
+                        '    <img alt="FastStable" src="' + icon_dict[part] + '" checked/>\n'
+                        '    <input onclick="toggleFastStable();" type="checkbox" value="FastStable" checked/>Fast Stable ('
+                        + str(len(stableFastRelays)) + ')\n'
+                        )
+            elif part == 'stable':
+                htmlBody += (
+                        '    <img alt="Stable" src="' + icon_dict[part] + '" />\n'
+                        '    <input onclick="toggleStable();" type="checkbox" value="Stable" />Stable ('
+                        + str(len(stableRelays)) + ')\n'
+                        )
+            elif part == 'named':
+                htmlBody += (
+                        '    <img alt="Named" src="' + icon_dict[part] + '" />\n'
+                        '    <input onclick="toggleNamed();" type="checkbox" value="Named" />Named ('
+                        + str(len(namedRelays)) + ')\n'
+                        )
+            elif part == 'other':
+                htmlBody += (
+                        '    <img alt="Other" src="' + icon_dict[part] + '" />\n'
+                        '    <input onclick="toggleOther();" type="checkbox" value="Other" />Other ('
+                        + str(len(otherRelays)) + ')\n'
+                        )
+
+        if not os.path.exists(HTMLDIR):
+            os.makedirs(HTMLDIR)
+        html = open(HTMLDIR + 'gmaps.html', 'w')
+        html.write(htmlHeader_top)
+        html.write(htmlBody)
+        html.write(htmlFooter)
+        html.close()
 
 def main(argv=None):
     parse()
     geoiplookup()
     genkml()
-#    genhtml()
+    genhtml()
 
 import sys
 if __name__ == "__main__":
