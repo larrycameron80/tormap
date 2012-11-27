@@ -180,7 +180,7 @@ def generateFolder(name, styleUrl, relays):
             <p><strong>Uptime</strong>: $uptime</p>\n\
             <p><strong>Contact</strong>: $contact</p>\n\
             <p><strong>Policy</strong>: $policy</p>\n\
-            <p><strong>Fingerprint</strong>: <a href="https://torstatus.blutmagie.de/router_detail.php?FP=$fingerprint">$prettyFingerprint</a></p>\n\
+            <p><strong>Fingerprint</strong>: <a href="https://atlas.torproject.org/#details/$fingerprint">$prettyFingerprint</a></p>\n\
             <p><strong>Version</strong>: $version</p>\n\
             ]]>\n\
             </description>\n\
