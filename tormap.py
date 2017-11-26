@@ -260,7 +260,6 @@ def genhtml():
             '    <meta charset="utf-8">\n'
             '    <title>World City Map of Tor Nodes</title>\n'
             '    <link href="default.css" rel="stylesheet">\n'
-            '    <script type="text/javascript" src="//maps.google.com/maps/api/js?sensor=false"></script>\n'
             '    <script type="text/javascript" src="tormap.js"></script>\n'
             '  </head>\n'
             '  <body onload="initialize()">\n'
@@ -271,7 +270,10 @@ def genhtml():
         htmlFooter = (
             '    <br /></p>\n'
             '    <div id="map_canvas" style="width: 79%; height: 80%; float: left"></div>\n'
-            '    <div id="content_window" style="width: 21%; height: 100%; float: left"></div>\n'
+            '    <div id="content_window" style="width: 21%; height: 80%; float: left"></div>\n'
+            '    <br />Read more at <a href="https://github.com/kargig/tormap">https://github.com/kargig/tormap</a>\n'
+            '    <script async defer src="https://maps.googleapis.com/maps/api/js?key=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX&callback=initialize"\n'
+            '    type="text/javascript"></script>\n'
             '  </body>\n'
             '</html>\n'
         )
