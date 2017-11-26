@@ -101,7 +101,7 @@ def parse():
                 if line.startswith('s '):
                     flags = line[2:]
                     currentRouter['flags'] = flags
-                    if flags.find('Bad')>-1:
+                    if flags.find('BadExit')>-1:
                         badRelays[fingerprint] = currentRouter
                     elif flags.find('Authority')>-1:
                         authRelays[fingerprint] = currentRouter
@@ -115,8 +115,6 @@ def parse():
                             stableFastRelays[fingerprint] = currentRouter
                         else:
                             stableRelays[fingerprint] = currentRouter
-                    elif flags.find('Named')>-1:
-                        namedRelays[fingerprint] = currentRouter
                     else:
                         otherRelays[fingerprint] = currentRouter
 
@@ -126,10 +124,9 @@ def parse():
         print 'Non-exit stable:', len(stableRelays)
         print 'Fast non-exit stable:', len(stableFastRelays)
         print 'Authority:', len(authRelays)
-        print 'Named:', len(namedRelays)
         print 'Other:', len(otherRelays)
 
-        inConsensus = len(namedRelays)+len(authRelays)+len(badRelays)+len(exitRelays)+len(stableRelays)+len(otherRelays)
+        inConsensus = len(authRelays)+len(badRelays)+len(exitRelays)+len(stableRelays)+len(otherRelays)
         print '[ in consensus:', inConsensus, ']'
         notInConsensus = len(cachedRelays)-len(badRelays)-len(exitRelays)-len(stableRelays)-len(otherRelays)
         print '[ cached descriptors not in consensus:', notInConsensus, ']'
@@ -140,7 +137,6 @@ def parse():
         allRelays.update(stableRelays)
         allRelays.update(stableFastRelays)
         allRelays.update(authRelays)
-        allRelays.update(namedRelays)
         allRelays.update(otherRelays)
         allRelays.update(badRelays)
 
@@ -223,8 +219,6 @@ def genkml():
                 kmlBody = kmlBody + generateFolder("%s Fast stable nodes (>= 1MB/s)" % len(stableFastRelays), "#stableFast", stableFastRelays)
             elif part == 'stable':
                 kmlBody = kmlBody + generateFolder("%s Stable nodes" % len(stableRelays), "#stable", stableRelays)
-            elif part == 'named':
-                kmlBody = kmlBody + generateFolder("%s Named nodes" % len(namedRelays), "#named", namedRelays)
             elif part == 'other':
                 kmlBody = kmlBody + generateFolder("%s Other" % len(otherRelays), "#other", otherRelays)
 
@@ -285,7 +279,7 @@ def genhtml():
         htmlBody = ()
         htmlBody = ''
         #we need a certain order inside the html
-        parts = ['other','named','stable','stableFast','exit','exitFast','auth','bad']
+        parts = ['other','stable','stableFast','exit','exitFast','auth','bad']
         for part in parts:
             if part == 'auth':
                 htmlBody += (
@@ -323,12 +317,6 @@ def genhtml():
                         '    <input onclick="toggleStable();" type="checkbox" value="Stable" />Stable ('
                         + str(len(stableRelays)) + ')\n'
                         )
-            elif part == 'named':
-                htmlBody += (
-                        '    <img alt="Named" src="' + icon_dict[part] + '" />\n'
-                        '    <input onclick="toggleNamed();" type="checkbox" value="Named" />Named ('
-                        + str(len(namedRelays)) + ')\n'
-                        )
             elif part == 'other':
                 htmlBody += (
                         '    <img alt="Other" src="' + icon_dict[part] + '" />\n'
@@ -359,7 +347,6 @@ if __name__ == "__main__":
         'exit':'https://maps.google.com/mapfiles/kml/paddle/grn-blank.png',
         'stableFast':'https://maps.google.com/mapfiles/kml/paddle/purple-blank.png',
         'stable':'https://maps.google.com/mapfiles/kml/paddle/ylw-blank.png',
-        'named':'https://maps.google.com/mapfiles/kml/paddle/wht-stars.png',
         'other':'https://maps.google.com/mapfiles/kml/paddle/wht-blank.png',
     }
     allRelays = dict()
@@ -369,6 +356,5 @@ if __name__ == "__main__":
     stableFastRelays = dict() # Stable flag, but not Exit
     stableRelays = dict() # Stable flag, but not Exit
     authRelays = dict() # Authority flag
-    namedRelays = dict() # Named flag
     otherRelays = dict() # non Stable, non Exit
     sys.exit(main())
