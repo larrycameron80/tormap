@@ -46,16 +46,22 @@ if [ -e $TMPDIR/GeoLiteCity.dat ]; then
 	DBAGE=`stat -c %Z $TMPDIR/GeoLiteCity.dat`
 	CDATE=`date +%s`
 	if [ $(( $CDATE - $DBAGE )) -gt 2592000 ]; then
+		rm -f $TMPDIR/GeoLiteCity.dat.gz
+		rm -f $TMPDIR/GeoLiteCity.dat
 		wget "http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz" -O $TMPDIR/GeoLiteCity.dat.gz -o /dev/null -q
 		gunzip $TMPDIR/GeoLiteCity.dat.gz
 	fi
 else
+	rm -f $TMPDIR/GeoLiteCity.dat.gz
+	rm -f $TMPDIR/GeoLiteCity.dat
 	wget "http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz" -O $TMPDIR/GeoLiteCity.dat.gz -o /dev/null -q
 	gunzip $TMPDIR/GeoLiteCity.dat.gz
 fi
 
 if [ -e $TMPDIR/GeoLiteCity.dat ] && [ -e $TMPDIR/all ] && [ -e $TMPDIR/consensus ]; then
 	python $BINDIR/tormap.py
+	cd $KMLDIR
+	for i in *.kml; do BASE=`basename $i .kml`; zip $BASE.kmz $i; done
 else
 	echo "missing important files. exiting."
 	exit 2
