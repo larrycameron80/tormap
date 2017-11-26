@@ -26,7 +26,7 @@
 '''
 
 #Variables
-FAST = 1000000
+FAST = 5000000
 KMLDIR = '/var/www/maps/'
 HTMLDIR = '/var/www/'
 TMPDIR= '/tmp/tormap/'
@@ -212,11 +212,11 @@ def genkml():
             elif part == 'bad':
                 kmlBody = kmlBody + generateFolder("%s Bad" % len(badRelays), "#bad", badRelays)
             elif part == 'exitFast':
-                kmlBody = kmlBody + generateFolder("%s Fast Exits (>= 1MB/s)" % len(exitFastRelays), "#exitFast", exitFastRelays)
+                kmlBody = kmlBody + generateFolder("%s Fast Exits (>= 5MB/s)" % len(exitFastRelays), "#exitFast", exitFastRelays)
             elif part == 'exit':
                 kmlBody = kmlBody + generateFolder("%s Exits" % len(exitRelays), "#exit", exitRelays)
             elif part == 'stableFast':
-                kmlBody = kmlBody + generateFolder("%s Fast stable nodes (>= 1MB/s)" % len(stableFastRelays), "#stableFast", stableFastRelays)
+                kmlBody = kmlBody + generateFolder("%s Fast stable nodes (>= 5MB/s)" % len(stableFastRelays), "#stableFast", stableFastRelays)
             elif part == 'stable':
                 kmlBody = kmlBody + generateFolder("%s Stable nodes" % len(stableRelays), "#stable", stableRelays)
             elif part == 'other':
@@ -296,7 +296,7 @@ def genhtml():
             elif part == 'exitFast':
                 htmlBody += (
                         '    <img alt="FastExit" src="' + icon_dict[part] + '" />\n'
-                        '    <input onclick="toggleFastExit();" type="checkbox" value="Fast Exits" checked/>Fast Exit ('
+                        '    <input onclick="toggleFastExit();" type="checkbox" value="Fast Exits" checked/>Fast Exit (>5Mb/s) ('
                         + str(len(exitFastRelays)) + ')\n'
                         )
             elif part == 'exit':
@@ -307,8 +307,8 @@ def genhtml():
                         )
             elif part == 'stableFast':
                 htmlBody += (
-                        '    <img alt="FastStable" src="' + icon_dict[part] + '" checked/>\n'
-                        '    <input onclick="toggleFastStable();" type="checkbox" value="FastStable" checked/>Fast Stable ('
+                        '    <img alt="FastStable" src="' + icon_dict[part] + '" />\n'
+                        '    <input onclick="toggleFastStable();" type="checkbox" value="Fast Stable" checked/>Fast Stable (>5Mb/s) ('
                         + str(len(stableFastRelays)) + ')\n'
                         )
             elif part == 'stable':
