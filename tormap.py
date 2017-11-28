@@ -249,7 +249,7 @@ def genhtml():
             elif part == 'stableFast':
                 htmlBody += (
                         '    <img alt="FastStable" src="' + icon_dict[part] + '" />\n'
-                        '    <input onclick="toggleFastStable();" type="checkbox" value="Fast Stable" checked/>Fast Stable (>5Mb/s) ('
+                        '    <input onclick="toggleFastStable();" type="checkbox" value="Fast Stable"/>Fast Stable (>5Mb/s) ('
                         + str(len(stableFastRelays)) + ')\n'
                         )
             elif part == 'stable':
