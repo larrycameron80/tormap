@@ -8,9 +8,8 @@
  Changes by George Kargiotakis kargig[at]void[dot]gr
  01.11.2012
 
- requires:
- - pygeoip, https://code.google.com/p/pygeoip/
- - geoIP city database, eg. https://www.maxmind.com/app/geolitecity
+ Change script to use https://onionoo.torproject.org/
+ 28.11.2017 - George Kargiotakis kargig[at]void[dot]gr
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License (LGPL)
@@ -32,152 +31,89 @@ HTMLDIR = '/var/www/'
 TMPDIR= '/tmp/tormap/'
 
 import os
-import base64, shelve, pygeoip, cgi, re
-from operator import attrgetter, itemgetter
+import re
 from string import Template
 import random
+import json
+import sys
 
-def parse():
-        cachedRelays = dict()
-        currentRouter = dict()
-        # parse cached-descriptors to extract uptime and announced bandwidth
-        with open(TMPDIR + 'all') as f:
-            for line in f:
-                line = line.strip()
-                if line.startswith('router '):
-                    [nil,name,ip,orport,socksport,dirport] = line.split()
-                    currentRouter['name'] = name
-                    currentRouter['ip'] = ip
-                    currentRouter['orport'] = orport
-                    currentRouter['socksport'] = socksport
-                    currentRouter['dirport'] = dirport
-                if line.startswith('platform '):
-                    currentRouter['version']=line[9:]
-                if line.startswith('opt fingerprint'):
-                    fingerprint=line[16:]
-                    currentRouter['fingerprint'] = fingerprint.replace(' ','').lower()
-                if line.startswith('fingerprint'):
-                    fingerprint=line[12:]
-                    currentRouter['fingerprint'] = fingerprint.replace(' ','').lower()
-                if line.startswith('uptime '):
-                    currentRouter['uptime']=line[7:]
-                if line.startswith('bandwidth '):
-                    currentRouter['bandwidth'] = line[10:]
-                    try:
-                        currentRouter['bw-observed'] = int(line.split()[3])
-                    except:
-                        pass
-                    bandwidth = line[10:]
-                if line.startswith('contact '):
-                    currentRouter['contact'] = cgi.escape(line[8:])
-                if line == 'router-signature':
-                    fingerprint = currentRouter['fingerprint']
-                    cachedRelays[fingerprint] = currentRouter
-                    currentRouter = dict()
-
-        # parse cached-consensus for flags and correlate to descriptors
-
-
-        count = 0
-        with open(TMPDIR + 'consensus') as f:
-            for line in f:
-                line = line.strip()
-                if line.startswith('r '):
-                    [nil,name,identity,digest,date,time,ip,orport,dirport] = line.split()
-                    identity = identity.strip()
-                    fingerprint = base64.decodestring(identity + '=\n').encode('hex')
-                    # php: unpack('H*',decode_base64($identity))
-                    currentRouter = dict()
-                    if fingerprint in cachedRelays:
-                        currentRouter = cachedRelays[fingerprint]
-                    # trust consensus more than cached-descriptors, replace info
-                    currentRouter['fingerprint'] = fingerprint
-                    currentRouter['name'] = name
-                    currentRouter['ip'] = ip
-                    currentRouter['orport'] = orport
-                    currentRouter['dirport'] = dirport
-                if line.startswith('p '):
-                    currentRouter['policy'] = line[2:]
-                if line.startswith('s '):
-                    flags = line[2:]
-                    currentRouter['flags'] = flags
-                    if flags.find('BadExit')>-1:
-                        badRelays[fingerprint] = currentRouter
-                    elif flags.find('Authority')>-1:
-                        authRelays[fingerprint] = currentRouter
-                    elif flags.find('Exit')>-1:
-                        if currentRouter.has_key('bw-observed') and currentRouter['bw-observed']>FAST:
-                            exitFastRelays[fingerprint] = currentRouter
-                        else:
-                            exitRelays[fingerprint] = currentRouter
-                    elif flags.find('Stable')>-1:
-                        if currentRouter.has_key('bw-observed') and currentRouter['bw-observed']>FAST:
-                            stableFastRelays[fingerprint] = currentRouter
-                        else:
-                            stableRelays[fingerprint] = currentRouter
-                    else:
-                        otherRelays[fingerprint] = currentRouter
-
-        print 'Bad:', len(badRelays)
-        print 'Exit:', len(exitRelays)
-        print 'Fast exit:', len(exitFastRelays)
-        print 'Non-exit stable:', len(stableRelays)
-        print 'Fast non-exit stable:', len(stableFastRelays)
-        print 'Authority:', len(authRelays)
-        print 'Other:', len(otherRelays)
-
-        inConsensus = len(authRelays)+len(badRelays)+len(exitRelays)+len(stableRelays)+len(otherRelays)
-        print '[ in consensus:', inConsensus, ']'
-        notInConsensus = len(cachedRelays)-len(badRelays)-len(exitRelays)-len(stableRelays)-len(otherRelays)
-        print '[ cached descriptors not in consensus:', notInConsensus, ']'
-
-        # put all relays we want to plot in one list for geoIP
-        allRelays.update(exitRelays)
-        allRelays.update(exitFastRelays)
-        allRelays.update(stableRelays)
-        allRelays.update(stableFastRelays)
-        allRelays.update(authRelays)
-        allRelays.update(otherRelays)
-        allRelays.update(badRelays)
-
-def geoiplookup():
-        # geoIP
-        geoIPcache = shelve.open(TMPDIR + 'geoip-cache')
-        geoIPdb = None
-
-        for relay in allRelays.values():
-            ip = relay['ip']
-            if geoIPcache.has_key(ip):
-                info = geoIPcache[ip]
-            else:
-                if geoIPdb is None:
-                    geoIPdb = pygeoip.GeoIP(TMPDIR + 'GeoLiteCity.dat',pygeoip.STANDARD)
-                info = geoIPdb.record_by_addr(ip)
-                geoIPcache[ip] = info
-            if info is None:
-                print 'GeoIP problem: ',relay['name'],ip
-            if info is not None:
-                relay['location'] = info
-                relay['latitude'] = info['latitude'] + random.random()/(5*10)
-                relay['longitude'] = info['longitude'] + random.random()/(5*10)
-
-        geoIPcache.close()
-
+def parsejson():
+  with open(TMPDIR+'relays.json', 'r') as relay_file:
+    types = json.load(relay_file)
+    for relay in types['relays']:
+      # use only the ones that are found running in consensus
+      if relay['running'] == True:
+        # add jitter for geolocation
+        try:
+            relay['latitude'] = relay['latitude'] + random.random()/(5*10)
+            relay['longitude'] = relay['longitude'] + random.random()/(5*10)
+        except:
+            relay['latitude'] = random.random()/(5*10)
+            relay['longitude'] = random.random()/(5*10)
+        for address in relay['or_addresses']:
+          if address.startswith('['):
+            try:
+                result = re.search('\[(.*)\]:(.*)', address)
+                ipv6  = result.group(1)
+                oport = result.group(2)
+                relay['ipv6'] = ipv6
+                relay['orport6'] = oport
+            except:
+                pass
+          else:
+            oport = address.split(':')[-1]
+            ip = address.split(':')[0]
+            relay['ipv4'] = ip
+            relay['orport4'] = oport
+        try:
+            dport = relay['dir_address'].split(':')[1]
+            relay['dirport'] = dport
+        except:
+            relay['dirport'] = 'None'
+        fingerprint = relay['fingerprint']
+        if 'BadExit' in relay['flags']:
+            badRelays[fingerprint] = relay
+        elif 'Authority' in relay['flags']:
+            authRelays[fingerprint] = relay
+        elif 'Exit' in relay['flags']:
+          if relay.has_key('observed_bandwidth') and relay['observed_bandwidth']>FAST:
+            exitFastRelays[fingerprint] = relay
+          else:
+            exitRelays[fingerprint] = relay
+        elif 'Stable' in relay['flags']:
+          if relay.has_key('observed_bandwidth') and relay['observed_bandwidth']>FAST:
+            stableFastRelays[fingerprint] = relay
+          else:
+            stableRelays[fingerprint] = relay
+        else:
+            otherRelays[fingerprint] = relay
+    print 'Bad:', len(badRelays)
+    print 'Exit:', len(exitRelays)
+    print 'Fast exit:', len(exitFastRelays)
+    print 'Non-exit stable:', len(stableRelays)
+    print 'Fast non-exit stable:', len(stableFastRelays)
+    print 'Authority:', len(authRelays)
+    print 'Other:', len(otherRelays)
+    inConsensus = len(authRelays)+len(badRelays)+len(exitRelays)+len(stableRelays)+len(otherRelays)
+    print '[ in consensus:', inConsensus, ']'
+    notInConsensus = len(types['relays'])-len(badRelays)-len(exitRelays)-len(stableRelays)-len(otherRelays)
+    print '[ cached descriptors not in consensus:', notInConsensus, ']'
 
 def generateFolder(name, styleUrl, relays):
         placemarkTemplate = Template ('<Placemark>\n\
-            <name>$name</name>\n\
+            <name>$nickname</name>\n\
             <description>\n\
             <![CDATA[\n\
-            <p><strong>IP</strong>: <a href="https://who.is/whois-ip/ip-address/$ip">$ip</a></p>\n\
-            <p><strong>ORPort</strong>: $orport <strong>DirPort</strong>: $dirport</p>\n\
-            <p><strong>Bandwidth</strong>: $bandwidth</p>\n\
-            <p><strong>Flags</strong>: $flags</p>\n\
-            <p><strong>Uptime</strong>: $uptime</p>\n\
+            <p><strong>IPv4</strong>: <a href="https://centralops.net/co/DomainDossier.aspx?dom_whois=1&net_whois=1&dom_dns=1&addr=$ipv4">$ipv4</a> <strong>ORPort</strong>: $orport4</p>\n\
+            <p><strong>IPv6</strong>: <a href="https://centralops.net/co/DomainDossier.aspx?dom_whois=1&net_whois=1&dom_dns=1&addr=$ipv6">$ipv6</a> <strong>ORPort</strong>: $orport6</p>\n\
+            <p><strong>DirPort</strong>: $dirport</p>\n\
+            <p><strong>Bandwidth</strong>: $observed_bandwidth</p>\n\
+            <p><strong>Flags</strong>: $flatflags</p>\n\
+            <p><strong>Up since</strong>: $last_restarted</p>\n\
             <p><strong>Contact</strong>: $contact</p>\n\
-            <p><strong>Policy</strong>: $policy</p>\n\
+            <p><strong>Policy</strong>: $exit_policy_summary</p>\n\
             <p><strong>Fingerprint</strong>: <a href="https://atlas.torproject.org/#details/$fingerprint">$prettyFingerprint</a></p>\n\
-            <p><strong>Version</strong>: $version</p>\n\
+            <p><strong>Platform</strong>: $platform</p>\n\
             ]]>\n\
             </description>\n\
             <styleUrl>$styleUrl</styleUrl>\n\
@@ -192,6 +128,10 @@ def generateFolder(name, styleUrl, relays):
             # for displaying: pretty fingerprint in blocks of four, uppercase
             relay['prettyFingerprint'] = " ".join(filter(None, re.split('(\w{4})', fingerprint.upper())))
             relay['styleUrl'] = styleUrl
+            relay['flatflags'] = ",".join(relay['flags'])
+            if 'ipv6' not in relay:
+                relay['ipv6'] = ''
+                relay['orport6'] = ''
             if 'contact' not in relay:
                 relay['contact'] = 'None'
             placemark = placemarkTemplate.safe_substitute(relay)
@@ -204,7 +144,6 @@ def genkml():
         kmlBody = ()
 
         parts = icon_dict.keys()
-#        parts = ['auth','bad','exitFast','exit','stableFast','stable','named','other']
         for part in parts:
             kmlBody = ''
             if part == 'auth':
@@ -335,12 +274,10 @@ def genhtml():
         html.close()
 
 def main(argv=None):
-    parse()
-    geoiplookup()
+    parsejson()
     genkml()
     genhtml()
 
-import sys
 if __name__ == "__main__":
     icon_dict = {
         'auth':'https://maps.google.com/mapfiles/kml/paddle/blu-stars.png',
@@ -351,7 +288,6 @@ if __name__ == "__main__":
         'stable':'https://maps.google.com/mapfiles/kml/paddle/ylw-blank.png',
         'other':'https://maps.google.com/mapfiles/kml/paddle/wht-blank.png',
     }
-    allRelays = dict()
     badRelays = dict() # Bad in flags, eg. BadExit, BadDirectory
     exitFastRelays = dict() # Exit flag, >= FAST
     exitRelays = dict() # Exit flag, slower than FAST
