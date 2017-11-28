@@ -111,7 +111,8 @@ def generateFolder(name, styleUrl, relays):
             <p><strong>Flags</strong>: $flatflags</p>\n\
             <p><strong>Up since</strong>: $last_restarted</p>\n\
             <p><strong>Contact</strong>: $contact</p>\n\
-            <p><strong>Policy</strong>: $exit_policy_summary</p>\n\
+            <p><strong>IPv4 Policy</strong>: $exit_policy_summary</p>\n\
+            <p><strong>IPv6 Policy</strong>: $exit_policy_v6_summary</p>\n\
             <p><strong>Fingerprint</strong>: <a href="https://atlas.torproject.org/#details/$fingerprint">$prettyFingerprint</a></p>\n\
             <p><strong>Platform</strong>: $platform</p>\n\
             ]]>\n\
@@ -132,8 +133,13 @@ def generateFolder(name, styleUrl, relays):
             if 'ipv6' not in relay:
                 relay['ipv6'] = ''
                 relay['orport6'] = ''
+            if 'exit_policy_v6_summary' not in relay:
+                relay['exit_policy_v6_summary'] = ''
+            else:
+                relay['exit_policy_v6_summary'] = json.dumps(relay['exit_policy_v6_summary']).replace("{","").replace("}", "").replace('"','')
             if 'contact' not in relay:
                 relay['contact'] = 'None'
+            relay['exit_policy_summary'] = json.dumps(relay['exit_policy_summary']).replace("{","").replace("}", "").replace('"','')
             placemark = placemarkTemplate.safe_substitute(relay)
             group = group + placemark
         group = group + "\n</Folder>"
