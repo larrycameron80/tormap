@@ -1,9 +1,8 @@
 The following steps are performed by the Python script:
 
-1. Extract information about Tor relays from cached consensus and descriptor files.
-2. Use MaxMind's free GeoIP database to map their IPs to cities.
-3. Generate XML-based KML files.
-4. Generate HTML that displays KML files on Google Maps.
+1. Parse json file from onionoo
+2. Generate XML-based KML files.
+3. Generate HTML that displays KML files on OpenStreetMap.
 
 Original Post:
 http://moblog.wiredwings.com/archives/20101213/Visualization-Tor-nodes-on-Google-Maps-and-Google-Earth.html

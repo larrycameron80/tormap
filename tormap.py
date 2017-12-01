@@ -8,8 +8,11 @@
  Changes by George Kargiotakis kargig[at]void[dot]gr
  01.11.2012
 
- Change script to use https://onionoo.torproject.org/
- 28.11.2017 - George Kargiotakis kargig[at]void[dot]gr
+ Change script to use onionnoo json by George Kargiotakis kargig[at]void[dot]gr
+ 28.11.2017
+
+ Switch to OpenStreetMap by George Kargiotakis kargig[at]void[dot]gr
+ 01.12.2017
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License (LGPL)
@@ -32,10 +35,18 @@ TMPDIR= '/tmp/tormap/'
 
 import os
 import re
+import cgi
 from string import Template
 import random
 import json
 import sys
+
+def sizeof_fmt(num, suffix='B'):
+    for unit in ['','Ki','Mi','Gi','Ti','Pi','Ei','Zi']:
+        if abs(num) < 1024.0:
+            return "%3.1f%s%s" % (num, unit, suffix)
+        num /= 1024.0
+    return "%.1f%s%s" % (num, 'Yi', suffix)
 
 def parsejson():
   with open(TMPDIR+'relays.json', 'r') as relay_file:
@@ -129,9 +140,11 @@ def generateFolder(name, styleUrl, relays):
             # for displaying: pretty fingerprint in blocks of four, uppercase
             relay['prettyFingerprint'] = " ".join(filter(None, re.split('(\w{4})', fingerprint.upper())))
             relay['styleUrl'] = styleUrl
+            relay['observed_bandwidth'] = sizeof_fmt(relay['observed_bandwidth'])
             relay['flatflags'] = ",".join(relay['flags'])
             if 'ipv6' not in relay:
                 relay['ipv6'] = ''
+                relay['orport6'] = ''
                 relay['orport6'] = ''
             if 'exit_policy_v6_summary' not in relay:
                 relay['exit_policy_v6_summary'] = ''
@@ -139,6 +152,8 @@ def generateFolder(name, styleUrl, relays):
                 relay['exit_policy_v6_summary'] = json.dumps(relay['exit_policy_v6_summary']).replace("{","").replace("}", "").replace('"','')
             if 'contact' not in relay:
                 relay['contact'] = 'None'
+            else:
+                relay['contact'] = cgi.escape(relay['contact'])
             relay['exit_policy_summary'] = json.dumps(relay['exit_policy_summary']).replace("{","").replace("}", "").replace('"','')
             placemark = placemarkTemplate.safe_substitute(relay)
             group = group + placemark
@@ -177,6 +192,7 @@ def genkml():
                 '            <Icon>\n'
                 '                <href>' + icon_dict[part] + '</href>\n'
                 '            </Icon>\n'
+                '            <hotSpot x="0.1" y="0" xunits="fraction" yunits="fraction" />\n'
                 '        </IconStyle>\n'
                 '    </Style>\n'
              )
@@ -204,8 +220,12 @@ def genhtml():
             '    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">\n'
             '    <meta charset="utf-8">\n'
             '    <title>World City Map of Tor Nodes</title>\n'
+            '    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css" />\n'
+            '    <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"></script>\n'
+            '    <script type="text/javascript" src="leaflet-color-markers/js/leaflet-color-markers.js"></script>\n'
+            '    <script type="text/javascript" src="osm.js"></script>\n'
             '    <link href="default.css" rel="stylesheet">\n'
-            '    <script type="text/javascript" src="tormap.js"></script>\n'
+            '    <script src="leaflet-plugins/layer/vector/KML.js"></script>\n'
             '  </head>\n'
             '  <body onload="initialize()">\n'
             '    <p align="left">\n'
@@ -214,11 +234,8 @@ def genhtml():
 
         htmlFooter = (
             '    <br /></p>\n'
-            '    <div id="map_canvas" style="width: 79%; height: 80%; float: left"></div>\n'
-            '    <div id="content_window" style="width: 21%; height: 80%; float: left"></div>\n'
+            '    <div id="map_canvas" style="width: 100%; height: 85%; float: left"></div>\n'
             '    <br />Read more at <a href="https://github.com/kargig/tormap">https://github.com/kargig/tormap</a>\n'
-            '    <script async defer src="https://maps.googleapis.com/maps/api/js?key=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX&callback=initialize"\n'
-            '    type="text/javascript"></script>\n'
             '  </body>\n'
             '</html>\n'
         )
@@ -273,7 +290,7 @@ def genhtml():
 
         if not os.path.exists(HTMLDIR):
             os.makedirs(HTMLDIR)
-        html = open(HTMLDIR + 'gmaps.html', 'w')
+        html = open(HTMLDIR + 'osm.html', 'w')
         html.write(htmlHeader_top)
         html.write(htmlBody)
         html.write(htmlFooter)
@@ -286,13 +303,13 @@ def main(argv=None):
 
 if __name__ == "__main__":
     icon_dict = {
-        'auth':'https://maps.google.com/mapfiles/kml/paddle/blu-stars.png',
-        'bad':'https://maps.google.com/mapfiles/kml/pal3/icon41.png',
-        'exitFast':'https://maps.google.com/mapfiles/kml/paddle/red-stars.png',
-        'exit':'https://maps.google.com/mapfiles/kml/paddle/grn-blank.png',
-        'stableFast':'https://maps.google.com/mapfiles/kml/paddle/purple-blank.png',
-        'stable':'https://maps.google.com/mapfiles/kml/paddle/ylw-blank.png',
-        'other':'https://maps.google.com/mapfiles/kml/paddle/wht-blank.png',
+        'auth':'/leaflet-color-markers/img/marker-icon-blue.png',
+        'bad':'/images/danger.png',
+        'exitFast':'/leaflet-color-markers/img/marker-icon-red.png',
+        'exit':'/leaflet-color-markers/img/marker-icon-green.png',
+        'stableFast':'/leaflet-color-markers/img/marker-icon-violet.png',
+        'stable':'/leaflet-color-markers/img/marker-icon-yellow.png',
+        'other':'/leaflet-color-markers/img/marker-icon-grey.png',
     }
     badRelays = dict() # Bad in flags, eg. BadExit, BadDirectory
     exitFastRelays = dict() # Exit flag, >= FAST
