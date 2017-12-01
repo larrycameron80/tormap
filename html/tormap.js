@@ -1,6 +1,6 @@
 var togglestate_Other      = 0;
 var togglestate_Stable     = 0;
-var togglestate_FastStable = 1;
+var togglestate_FastStable = 0;
 var togglestate_Exit       = 1;
 var togglestate_FastExit   = 1;
 var togglestate_Bad        = 1;
@@ -24,22 +24,24 @@ function initialize() {
       mapTypeId: google.maps.MapTypeId.ROADMAP
     }
 
-geoXML_Authority = new google.maps.KmlLayer( kmlPATH + 'tormap_auth.kmz', {suppressInfoWindows: true, preserveViewport: true});
-geoXML_Bad = new google.maps.KmlLayer( kmlPATH + 'tormap_bad.kmz',{suppressInfoWindows: true, preserveViewport: true});
-geoXML_FastExit = new google.maps.KmlLayer( kmlPATH + 'tormap_exitFast.kmz',{suppressInfoWindows: true, preserveViewport: true});
-geoXML_Exit = new google.maps.KmlLayer(kmlPATH + 'tormap_exit.kmz',{suppressInfoWindows: true, preserveViewport: true});
-geoXML_FastStable = new google.maps.KmlLayer( kmlPATH + 'tormap_stableFast.kmz',{suppressInfoWindows: true, preserveViewport: true});
-geoXML_Stable = new google.maps.KmlLayer( kmlPATH + 'tormap_stable.kmz',{suppressInfoWindows: true, preserveViewport: true});
-geoXML_Other = new google.maps.KmlLayer( kmlPATH + 'tormap_other.kmz',{suppressInfoWindows: true, preserveViewport: true});
+
+var dummy = "?dummy="+(new Date()).getTime();
+geoXML_Authority = new google.maps.KmlLayer( kmlPATH + 'tormap_auth.kmz'+dummy, {suppressInfoWindows: true, preserveViewport: true});
+geoXML_Bad = new google.maps.KmlLayer( kmlPATH + 'tormap_bad.kmz' + dummy,{suppressInfoWindows: true, preserveViewport: true});
+geoXML_FastExit = new google.maps.KmlLayer( kmlPATH + 'tormap_exitFast.kmz'+dummy,{suppressInfoWindows: true, preserveViewport: true});
+geoXML_Exit = new google.maps.KmlLayer(kmlPATH + 'tormap_exit.kmz'+dummy,{suppressInfoWindows: true, preserveViewport: true});
+geoXML_FastStable = new google.maps.KmlLayer( kmlPATH + 'tormap_stableFast.kmz'+dummy,{suppressInfoWindows: true, preserveViewport: true});
+geoXML_Stable = new google.maps.KmlLayer( kmlPATH + 'tormap_stable.kmz'+dummy,{suppressInfoWindows: true, preserveViewport: true});
+geoXML_Other = new google.maps.KmlLayer( kmlPATH + 'tormap_other.kmz'+dummy,{suppressInfoWindows: true, preserveViewport: true});
 
     map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
-//    geoXML_Other.setMap(map);
-//    geoXML_Stable.setMap(map);
-    geoXML_FastStable.setMap(map);
-    geoXML_Exit.setMap(map);
-    geoXML_FastExit.setMap(map);
-    geoXML_Bad.setMap(map);
     geoXML_Authority.setMap(map);
+    geoXML_Bad.setMap(map);
+    geoXML_FastExit.setMap(map);
+    geoXML_Exit.setMap(map);
+//    geoXML_FastStable.setMap(map);
+//    geoXML_Stable.setMap(map);
+//    geoXML_Other.setMap(map);
 
     google.maps.event.addListener(geoXML_Other, 'click', function(kmlEvent) {
       var nodename = kmlEvent.featureData.name;
