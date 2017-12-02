@@ -4,6 +4,8 @@ html, body {
   padding: 0;
 }
 
+img { margin: 0px 0px 0px 30px; }
+
 #map_canvas {
   height: 100%;
 }

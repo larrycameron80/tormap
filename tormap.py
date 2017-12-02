@@ -29,8 +29,9 @@
 
 #Variables
 FAST = 5000000
-KMLDIR = '/var/www/maps/'
+MAPDIR='maps/'
 HTMLDIR = '/var/www/'
+KMLDIR = HTMLDIR+MAPDIR
 TMPDIR= '/tmp/tormap/'
 
 import os
@@ -234,8 +235,8 @@ def genhtml():
 
         htmlFooter = (
             '    <br /></p>\n'
-            '    <div id="map_canvas" style="width: 100%; height: 85%; float: left"></div>\n'
-            '    <br />Read more at <a href="https://github.com/kargig/tormap">https://github.com/kargig/tormap</a>\n'
+            '    <div id="map_canvas" style="width: 100%; height: 86%; float: left"></div>\n'
+            '    <br />Read more at <a href="https://github.com/kargig/tormap">https://github.com/kargig/tormap</a> | Click on the category links in the header to download the appropriate KML files\n'
             '  </body>\n'
             '</html>\n'
         )
@@ -247,45 +248,45 @@ def genhtml():
         for part in parts:
             if part == 'auth':
                 htmlBody += (
-                        '    <img alt="Authority" src="' + icon_dict[part] + '" />\n'
-                        '    <input onclick="toggleAuthority();" type="checkbox" value="Authority" checked/>Authority ('
-                        + str(len(authRelays)) + ')\n'
+                        '    <img alt="Authority" style="img" src="' + icon_dict[part] + '" />\n'
+                        '    <input onclick="toggleAuthority();" type="checkbox" value="Authority" checked/><a href="'+MAPDIR+'tormap_'+part+'.kml">Authority</a> ('
+                        + str(len(authRelays)) + ')   \n'
                         )
             elif part == 'bad':
                 htmlBody += (
-                        '    <img alt="Bad" src="'+ icon_dict[part] + '" />\n'
-                        '    <input onclick="toggleBad();" type="checkbox" value="Bad" checked/>Bad ('
-                        + str(len(badRelays)) + ')\n'
+                        '    <img alt="Bad" style="img" src="'+ icon_dict[part] + '" />\n'
+                        '    <input onclick="toggleBad();" type="checkbox" value="Bad" checked/><a href="'+MAPDIR+'tormap_'+part+'.kml">Bad</a> ('
+                        + str(len(badRelays)) + ')   \n'
                         )
             elif part == 'exitFast':
                 htmlBody += (
-                        '    <img alt="FastExit" src="' + icon_dict[part] + '" />\n'
-                        '    <input onclick="toggleFastExit();" type="checkbox" value="Fast Exits" checked/>Fast Exit (>5Mb/s) ('
-                        + str(len(exitFastRelays)) + ')\n'
+                        '    <img alt="FastExit" style="img" src="' + icon_dict[part] + '" />\n'
+                        '    <input onclick="toggleFastExit();" type="checkbox" value="Fast Exits" checked/><a href="'+MAPDIR+'tormap_'+part+'.kml">Fast Exit</a> (>5Mb/s) ('
+                        + str(len(exitFastRelays)) + ')   \n'
                         )
             elif part == 'exit':
                 htmlBody += (
-                        '    <img alt="Exit" src="' + icon_dict[part] + '" />\n'
-                        '    <input onclick="toggleExit();" type="checkbox" value="Exit" checked/>Exit ('
-                        + str(len(exitRelays)) + ')\n'
+                        '    <img alt="Exit" style="img" src="' + icon_dict[part] + '" />\n'
+                        '    <input onclick="toggleExit();" type="checkbox" value="Exit" checked/><a href="'+MAPDIR+'tormap_'+part+'.kml">Exit</a> ('
+                        + str(len(exitRelays)) + ')   \n'
                         )
             elif part == 'stableFast':
                 htmlBody += (
-                        '    <img alt="FastStable" src="' + icon_dict[part] + '" />\n'
-                        '    <input onclick="toggleFastStable();" type="checkbox" value="Fast Stable"/>Fast Stable (>5Mb/s) ('
-                        + str(len(stableFastRelays)) + ')\n'
+                        '    <img alt="FastStable" style="img" src="' + icon_dict[part] + '" />\n'
+                        '    <input onclick="toggleFastStable();" type="checkbox" value="Fast Stable"/><a href="'+MAPDIR+'tormap_'+part+'.kml">Fast Stable</a> (>5Mb/s) ('
+                        + str(len(stableFastRelays)) + ')   \n'
                         )
             elif part == 'stable':
                 htmlBody += (
-                        '    <img alt="Stable" src="' + icon_dict[part] + '" />\n'
-                        '    <input onclick="toggleStable();" type="checkbox" value="Stable" />Stable ('
-                        + str(len(stableRelays)) + ')\n'
+                        '    <img alt="Stable" style="img" src="' + icon_dict[part] + '" />\n'
+                        '    <input onclick="toggleStable();" type="checkbox" value="Stable" /><a href="'+MAPDIR+'tormap_'+part+'.kml">Stable</a> ('
+                        + str(len(stableRelays)) + ')   \n'
                         )
             elif part == 'other':
                 htmlBody += (
-                        '    <img alt="Other" src="' + icon_dict[part] + '" />\n'
-                        '    <input onclick="toggleOther();" type="checkbox" value="Other" />Other ('
-                        + str(len(otherRelays)) + ')\n'
+                        '    <img alt="Other" style="img" src="' + icon_dict[part] + '" />\n'
+                        '    <input onclick="toggleOther();" type="checkbox" value="Other" /><a href="'+MAPDIR+'tormap_'+part+'.kml">Other</a> ('
+                        + str(len(otherRelays)) + ')   \n'
                         )
 
         if not os.path.exists(HTMLDIR):
