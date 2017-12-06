@@ -65,11 +65,12 @@ def parsejson():
         for address in relay['or_addresses']:
           if address.startswith('['):
             try:
-                result = re.search('\[(.*)\]:(.*)', address)
+                result = re.search('(\[.*\]):(.*)', address)
                 ipv6  = result.group(1)
                 oport = result.group(2)
                 relay['ipv6'] = ipv6
                 relay['orport6'] = oport
+                relay['address6'] = address
             except:
                 pass
           else:
@@ -77,11 +78,6 @@ def parsejson():
             ip = address.split(':')[0]
             relay['ipv4'] = ip
             relay['orport4'] = oport
-        try:
-            dport = relay['dir_address'].split(':')[1]
-            relay['dirport'] = dport
-        except:
-            relay['dirport'] = 'None'
         fingerprint = relay['fingerprint']
         if 'BadExit' in relay['flags']:
             badRelays[fingerprint] = relay
@@ -116,9 +112,9 @@ def generateFolder(name, styleUrl, relays):
             <name>$nickname</name>\n\
             <description>\n\
             <![CDATA[\n\
-            <p><strong>IPv4</strong>: <a href="https://centralops.net/co/DomainDossier.aspx?dom_whois=1&net_whois=1&dom_dns=1&addr=$ipv4">$ipv4</a> <strong>ORPort</strong>: $orport4</p>\n\
-            <p><strong>IPv6</strong>: <a href="https://centralops.net/co/DomainDossier.aspx?dom_whois=1&net_whois=1&dom_dns=1&addr=$ipv6">$ipv6</a> <strong>ORPort</strong>: $orport6</p>\n\
-            <p><strong>DirPort</strong>: $dirport</p>\n\
+            <p><strong>IPv4</strong>: <a href="https://centralops.net/co/DomainDossier.aspx?dom_whois=1&net_whois=1&dom_dns=1&addr=$ipv4">$ipv4:$orport4</a></p>\n\
+            <p><strong>IPv6</strong>: <a href="https://centralops.net/co/DomainDossier.aspx?dom_whois=1&net_whois=1&dom_dns=1&addr=$ipv6">$address6</a></p>\n\
+            <p><strong>Directory Address</strong>: $dir_address</p>\n\
             <p><strong>Bandwidth</strong>: $observed_bandwidth</p>\n\
             <p><strong>Flags</strong>: $flatflags</p>\n\
             <p><strong>Up since</strong>: $last_restarted</p>\n\
@@ -126,7 +122,9 @@ def generateFolder(name, styleUrl, relays):
             <p><strong>IPv4 Policy</strong>: $exit_policy_summary</p>\n\
             <p><strong>IPv6 Policy</strong>: $exit_policy_v6_summary</p>\n\
             <p><strong>Fingerprint</strong>: <a href="https://atlas.torproject.org/#details/$fingerprint">$prettyFingerprint</a></p>\n\
+            <p><strong>Country</strong>: $country_name</p>\n\
             <p><strong>Platform</strong>: $platform</p>\n\
+            <p><strong>Recommended Version</strong>: $recommended_version</p>\n\
             ]]>\n\
             </description>\n\
             <styleUrl>$styleUrl</styleUrl>\n\
@@ -146,7 +144,7 @@ def generateFolder(name, styleUrl, relays):
             if 'ipv6' not in relay:
                 relay['ipv6'] = ''
                 relay['orport6'] = ''
-                relay['orport6'] = ''
+                relay['address6'] = ''
             if 'exit_policy_v6_summary' not in relay:
                 relay['exit_policy_v6_summary'] = ''
             else:
