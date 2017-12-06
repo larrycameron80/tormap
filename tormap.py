@@ -153,6 +153,8 @@ def generateFolder(name, styleUrl, relays):
                 relay['contact'] = 'None'
             else:
                 relay['contact'] = cgi.escape(relay['contact'])
+            if 'dir_address' not in relay:
+                relay['dir_address'] = ''
             relay['exit_policy_summary'] = json.dumps(relay['exit_policy_summary']).replace("{","").replace("}", "").replace('"','')
             placemark = placemarkTemplate.safe_substitute(relay)
             group = group + placemark
