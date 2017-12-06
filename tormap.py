@@ -8,8 +8,11 @@
  Changes by George Kargiotakis kargig[at]void[dot]gr
  01.11.2012
 
- Change script to use https://onionoo.torproject.org/
- 28.11.2017 - George Kargiotakis kargig[at]void[dot]gr
+ Change script to use onionnoo json by George Kargiotakis kargig[at]void[dot]gr
+ 28.11.2017
+
+ Switch to OpenStreetMap by George Kargiotakis kargig[at]void[dot]gr
+ 01.12.2017
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License (LGPL)
@@ -26,16 +29,25 @@
 
 #Variables
 FAST = 5000000
-KMLDIR = '/var/www/maps/'
+MAPDIR='maps/'
 HTMLDIR = '/var/www/'
+KMLDIR = HTMLDIR+MAPDIR
 TMPDIR= '/tmp/tormap/'
 
 import os
 import re
+import cgi
 from string import Template
 import random
 import json
 import sys
+
+def sizeof_fmt(num, suffix='B'):
+    for unit in ['','Ki','Mi','Gi','Ti','Pi','Ei','Zi']:
+        if abs(num) < 1024.0:
+            return "%3.1f%s%s" % (num, unit, suffix)
+        num /= 1024.0
+    return "%.1f%s%s" % (num, 'Yi', suffix)
 
 def parsejson():
   with open(TMPDIR+'relays.json', 'r') as relay_file:
@@ -129,9 +141,11 @@ def generateFolder(name, styleUrl, relays):
             # for displaying: pretty fingerprint in blocks of four, uppercase
             relay['prettyFingerprint'] = " ".join(filter(None, re.split('(\w{4})', fingerprint.upper())))
             relay['styleUrl'] = styleUrl
+            relay['observed_bandwidth'] = sizeof_fmt(relay['observed_bandwidth'])
             relay['flatflags'] = ",".join(relay['flags'])
             if 'ipv6' not in relay:
                 relay['ipv6'] = ''
+                relay['orport6'] = ''
                 relay['orport6'] = ''
             if 'exit_policy_v6_summary' not in relay:
                 relay['exit_policy_v6_summary'] = ''
@@ -139,6 +153,8 @@ def generateFolder(name, styleUrl, relays):
                 relay['exit_policy_v6_summary'] = json.dumps(relay['exit_policy_v6_summary']).replace("{","").replace("}", "").replace('"','')
             if 'contact' not in relay:
                 relay['contact'] = 'None'
+            else:
+                relay['contact'] = cgi.escape(relay['contact'])
             relay['exit_policy_summary'] = json.dumps(relay['exit_policy_summary']).replace("{","").replace("}", "").replace('"','')
             placemark = placemarkTemplate.safe_substitute(relay)
             group = group + placemark
@@ -177,6 +193,7 @@ def genkml():
                 '            <Icon>\n'
                 '                <href>' + icon_dict[part] + '</href>\n'
                 '            </Icon>\n'
+                '            <hotSpot x="0.1" y="0" xunits="fraction" yunits="fraction" />\n'
                 '        </IconStyle>\n'
                 '    </Style>\n'
              )
@@ -204,8 +221,12 @@ def genhtml():
             '    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">\n'
             '    <meta charset="utf-8">\n'
             '    <title>World City Map of Tor Nodes</title>\n'
+            '    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css" />\n'
+            '    <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"></script>\n'
+            '    <script type="text/javascript" src="leaflet-color-markers/js/leaflet-color-markers.js"></script>\n'
+            '    <script type="text/javascript" src="osm.js"></script>\n'
             '    <link href="default.css" rel="stylesheet">\n'
-            '    <script type="text/javascript" src="tormap.js"></script>\n'
+            '    <script src="leaflet-plugins/layer/vector/KML.js"></script>\n'
             '  </head>\n'
             '  <body onload="initialize()">\n'
             '    <p align="left">\n'
@@ -214,11 +235,8 @@ def genhtml():
 
         htmlFooter = (
             '    <br /></p>\n'
-            '    <div id="map_canvas" style="width: 79%; height: 80%; float: left"></div>\n'
-            '    <div id="content_window" style="width: 21%; height: 80%; float: left"></div>\n'
-            '    <br />Read more at <a href="https://github.com/kargig/tormap">https://github.com/kargig/tormap</a>\n'
-            '    <script async defer src="https://maps.googleapis.com/maps/api/js?key=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX&callback=initialize"\n'
-            '    type="text/javascript"></script>\n'
+            '    <div id="map_canvas" style="width: 100%; height: 86%; float: left"></div>\n'
+            '    <br />Read more at <a href="https://github.com/kargig/tormap">https://github.com/kargig/tormap</a> | Click on the category links in the header to download the appropriate KML files\n'
             '  </body>\n'
             '</html>\n'
         )
@@ -230,50 +248,50 @@ def genhtml():
         for part in parts:
             if part == 'auth':
                 htmlBody += (
-                        '    <img alt="Authority" src="' + icon_dict[part] + '" />\n'
-                        '    <input onclick="toggleAuthority();" type="checkbox" value="Authority" checked/>Authority ('
-                        + str(len(authRelays)) + ')\n'
+                        '    <img alt="Authority" style="img" src="' + icon_dict[part] + '" />\n'
+                        '    <input onclick="toggleAuthority();" type="checkbox" value="Authority" checked/><a href="'+MAPDIR+'tormap_'+part+'.kml">Authority</a> ('
+                        + str(len(authRelays)) + ')   \n'
                         )
             elif part == 'bad':
                 htmlBody += (
-                        '    <img alt="Bad" src="'+ icon_dict[part] + '" />\n'
-                        '    <input onclick="toggleBad();" type="checkbox" value="Bad" checked/>Bad ('
-                        + str(len(badRelays)) + ')\n'
+                        '    <img alt="Bad" style="img" src="'+ icon_dict[part] + '" />\n'
+                        '    <input onclick="toggleBad();" type="checkbox" value="Bad" checked/><a href="'+MAPDIR+'tormap_'+part+'.kml">Bad</a> ('
+                        + str(len(badRelays)) + ')   \n'
                         )
             elif part == 'exitFast':
                 htmlBody += (
-                        '    <img alt="FastExit" src="' + icon_dict[part] + '" />\n'
-                        '    <input onclick="toggleFastExit();" type="checkbox" value="Fast Exits" checked/>Fast Exit (>5Mb/s) ('
-                        + str(len(exitFastRelays)) + ')\n'
+                        '    <img alt="FastExit" style="img" src="' + icon_dict[part] + '" />\n'
+                        '    <input onclick="toggleFastExit();" type="checkbox" value="Fast Exits" checked/><a href="'+MAPDIR+'tormap_'+part+'.kml">Fast Exit</a> (>5Mb/s) ('
+                        + str(len(exitFastRelays)) + ')   \n'
                         )
             elif part == 'exit':
                 htmlBody += (
-                        '    <img alt="Exit" src="' + icon_dict[part] + '" />\n'
-                        '    <input onclick="toggleExit();" type="checkbox" value="Exit" checked/>Exit ('
-                        + str(len(exitRelays)) + ')\n'
+                        '    <img alt="Exit" style="img" src="' + icon_dict[part] + '" />\n'
+                        '    <input onclick="toggleExit();" type="checkbox" value="Exit" checked/><a href="'+MAPDIR+'tormap_'+part+'.kml">Exit</a> ('
+                        + str(len(exitRelays)) + ')   \n'
                         )
             elif part == 'stableFast':
                 htmlBody += (
-                        '    <img alt="FastStable" src="' + icon_dict[part] + '" />\n'
-                        '    <input onclick="toggleFastStable();" type="checkbox" value="Fast Stable"/>Fast Stable (>5Mb/s) ('
-                        + str(len(stableFastRelays)) + ')\n'
+                        '    <img alt="FastStable" style="img" src="' + icon_dict[part] + '" />\n'
+                        '    <input onclick="toggleFastStable();" type="checkbox" value="Fast Stable"/><a href="'+MAPDIR+'tormap_'+part+'.kml">Fast Stable</a> (>5Mb/s) ('
+                        + str(len(stableFastRelays)) + ')   \n'
                         )
             elif part == 'stable':
                 htmlBody += (
-                        '    <img alt="Stable" src="' + icon_dict[part] + '" />\n'
-                        '    <input onclick="toggleStable();" type="checkbox" value="Stable" />Stable ('
-                        + str(len(stableRelays)) + ')\n'
+                        '    <img alt="Stable" style="img" src="' + icon_dict[part] + '" />\n'
+                        '    <input onclick="toggleStable();" type="checkbox" value="Stable" /><a href="'+MAPDIR+'tormap_'+part+'.kml">Stable</a> ('
+                        + str(len(stableRelays)) + ')   \n'
                         )
             elif part == 'other':
                 htmlBody += (
-                        '    <img alt="Other" src="' + icon_dict[part] + '" />\n'
-                        '    <input onclick="toggleOther();" type="checkbox" value="Other" />Other ('
-                        + str(len(otherRelays)) + ')\n'
+                        '    <img alt="Other" style="img" src="' + icon_dict[part] + '" />\n'
+                        '    <input onclick="toggleOther();" type="checkbox" value="Other" /><a href="'+MAPDIR+'tormap_'+part+'.kml">Other</a> ('
+                        + str(len(otherRelays)) + ')   \n'
                         )
 
         if not os.path.exists(HTMLDIR):
             os.makedirs(HTMLDIR)
-        html = open(HTMLDIR + 'gmaps.html', 'w')
+        html = open(HTMLDIR + 'osm.html', 'w')
         html.write(htmlHeader_top)
         html.write(htmlBody)
         html.write(htmlFooter)
@@ -286,13 +304,13 @@ def main(argv=None):
 
 if __name__ == "__main__":
     icon_dict = {
-        'auth':'https://maps.google.com/mapfiles/kml/paddle/blu-stars.png',
-        'bad':'https://maps.google.com/mapfiles/kml/pal3/icon41.png',
-        'exitFast':'https://maps.google.com/mapfiles/kml/paddle/red-stars.png',
-        'exit':'https://maps.google.com/mapfiles/kml/paddle/grn-blank.png',
-        'stableFast':'https://maps.google.com/mapfiles/kml/paddle/purple-blank.png',
-        'stable':'https://maps.google.com/mapfiles/kml/paddle/ylw-blank.png',
-        'other':'https://maps.google.com/mapfiles/kml/paddle/wht-blank.png',
+        'auth':'/leaflet-color-markers/img/marker-icon-blue.png',
+        'bad':'/images/danger.png',
+        'exitFast':'/leaflet-color-markers/img/marker-icon-red.png',
+        'exit':'/leaflet-color-markers/img/marker-icon-green.png',
+        'stableFast':'/leaflet-color-markers/img/marker-icon-violet.png',
+        'stable':'/leaflet-color-markers/img/marker-icon-yellow.png',
+        'other':'/leaflet-color-markers/img/marker-icon-grey.png',
     }
     badRelays = dict() # Bad in flags, eg. BadExit, BadDirectory
     exitFastRelays = dict() # Exit flag, >= FAST
