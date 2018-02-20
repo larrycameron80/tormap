@@ -121,7 +121,7 @@ def generateFolder(name, styleUrl, relays):
             <p><strong>Contact</strong>: $contact</p>\n\
             <p><strong>IPv4 Policy</strong>: $exit_policy_summary</p>\n\
             <p><strong>IPv6 Policy</strong>: $exit_policy_v6_summary</p>\n\
-            <p><strong>Fingerprint</strong>: <a href="https://atlas.torproject.org/#details/$fingerprint">$prettyFingerprint</a></p>\n\
+            <p><strong>Fingerprint</strong>: <a href="https://metrics.torproject.org/rs.html#details/$fingerprint">$prettyFingerprint</a></p>\n\
             <p><strong>Country</strong>: $country_name</p>\n\
             <p><strong>Platform</strong>: $platform</p>\n\
             <p><strong>Recommended Version</strong>: $recommended_version</p>\n\
